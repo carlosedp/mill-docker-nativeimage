@@ -1,0 +1,140 @@
+name: Scala CI
+
+on:
+  push:
+    branches: [ main ]
+    tags: ["*"]
+  pull_request:
+    branches: [ main ]
+
+concurrency:
+  group: ${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        jvm: [ '11', '17' ]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Setup Java
+      uses: graalvm/setup-graalvm@v1
+      with:
+        version: '22.2.0'
+        distribution: 'temurin'
+        java-version: ${{ matrix.jvm }}
+        components: 'native-image'
+
+    - name: Cache packages
+      uses: coursier/cache-action@v6
+      id: coursier-cache
+
+    - name: Check Formatting
+      run: ./mill mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources
+      if: startsWith(matrix.jvm, '17')
+
+    - name: Run tests for all versions
+      run: ./mill testall
+
+  code-coverage:
+    needs: [test]
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: 17
+
+    - name: Cache packages
+      uses: coursier/cache-action@v6
+      id: coursier-cache
+
+    - name: Run code coverage
+      run: ./mill coverage
+
+    - name: Upload coverage to Codecov
+      uses: codecov/codecov-action@v3
+
+  publish-snapshot:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: '22.2.0'
+          distribution: 'temurin'
+          java-version: ${{ matrix.jvm }}
+          components: 'native-image'
+
+      - name: Cache packages
+        uses: coursier/cache-action@v6
+        id: coursier-cache
+
+      - name: Publish
+        run: ./mill -i io.kipp.mill.ci.release.ReleaseModule/publishAll
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+
+  publish-release:
+    needs: [test]
+    runs-on: ubuntu-latest
+    if: contains(github.ref, 'refs/tags/')
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Setup Java
+        uses: graalvm/setup-graalvm@v1
+        with:
+          version: '22.2.0'
+          distribution: 'temurin'
+          java-version: ${{ matrix.jvm }}
+          components: 'native-image'
+
+      - name: Cache packages
+        uses: coursier/cache-action@v6
+        id: coursier-cache
+
+      - name: Publish
+        run: ./mill -i io.kipp.mill.ci.release.ReleaseModule/publishAll
+        env:
+          SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
+          SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
+          PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
+          PGP_SECRET: ${{ secrets.PGP_SECRET }}
+
+      - name: Create Release for Tag
+        id: release_tag
+        uses: Akryum/release-tag@conventional
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          preset: angular # Use conventional-changelog preset

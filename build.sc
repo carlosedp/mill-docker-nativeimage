@@ -14,43 +14,44 @@ import de.tobiasroeser.mill.vcs.version.VcsVersion
 import io.kipp.mill.ci.release.CiReleaseModule
 
 // Used versions
-val millVersion = "0.10.8"
-val scala213 = "2.13.8"
+val millVersion            = "0.10.8"
+val scala213               = "2.13.9"
+val semanticdb             = "4.5.13"
 val millnativeimage_plugin = "0.1.21"
-val millvcsversion_plugin = "0.2.0"
+val millvcsversion_plugin  = "0.2.0"
+val organizeimports        = "0.6.0"
+val scalatest              = "3.2.14"
 
 val pluginName = "mill-docker-nativeimage"
 
 def millBinaryVersion(millVersion: String) = scalaNativeBinaryVersion(
-  millVersion
+  millVersion,
 )
 
-object plugin
-    extends ScalaModule
-    with CiReleaseModule
-    with ScalafixModule
-    with ScalafmtModule {
+object plugin extends ScalaModule with CiReleaseModule with ScalafixModule with ScalafmtModule {
 
   override def scalaVersion = scala213
+
+  def scalafixIvyDeps = Agg(ivy"com.github.liancheng::organize-imports:${organizeimports}")
+  def scalacPluginIvyDeps =
+    super.scalacPluginIvyDeps() ++ Agg(ivy"org.scalameta:::semanticdb-scalac:${semanticdb}")
 
   override def artifactName =
     s"${pluginName}_mill${millBinaryVersion(millVersion)}"
 
   def pomSettings = PomSettings(
-    description =
-      "A Mill plugin to generate Docker images with Native Image (GraalVM binary).",
-    organization = "com.carlosedp",
-    url = "https://github.com/carlosedp/mill-docker-nativeimage",
-    licenses = Seq(License.MIT),
-    versionControl =
-      VersionControl.github("carlosedp", "mill-docker-nativeimage"),
+    description    = "A Mill plugin to generate Docker images with Native Image (GraalVM binary).",
+    organization   = "com.carlosedp",
+    url            = "https://github.com/carlosedp/mill-docker-nativeimage",
+    licenses       = Seq(License.MIT),
+    versionControl = VersionControl.github("carlosedp", "mill-docker-nativeimage"),
     developers = Seq(
       Developer(
         "carlosedp",
         "Carlos Eduardo de Paula",
-        "https://github.com/carlosedp"
-      )
-    )
+        "https://github.com/carlosedp",
+      ),
+    ),
   )
 
   def publishVersion: T[String] = T {
@@ -69,21 +70,21 @@ object plugin
     "https://s01.oss.sonatype.org/content/repositories/snapshots"
 
   override def compileIvyDeps = super.compileIvyDeps() ++ Agg(
-    ivy"com.lihaoyi::mill-scalalib:${millVersion}"
+    ivy"com.lihaoyi::mill-scalalib:${millVersion}",
   )
 
   override def ivyDeps = super.ivyDeps() ++ Agg(
     ivy"de.tototec::de.tobiasroeser.mill.vcs.version_mill0.10::${millvcsversion_plugin}",
-    ivy"io.github.alexarchambault.mill::mill-native-image_mill0.10::${millnativeimage_plugin}"
+    ivy"io.github.alexarchambault.mill::mill-native-image_mill0.10::${millnativeimage_plugin}",
   )
   override def scalacOptions = Seq("-Ywarn-unused", "-deprecation")
 
   override def scalafixScalaBinaryVersion =
     ZincWorkerUtil.scalaBinaryVersion(scala213)
 
-  override def scalafixIvyDeps = Agg(
-    ivy"com.github.liancheng::organize-imports:0.6.0"
-  )
+  object test extends Tests with TestModule.ScalaTest {
+    def ivyDeps = Agg(ivy"org.scalatest::scalatest::${scalatest}")
+  }
 }
 
 // Toplevel commands and aliases
@@ -91,15 +92,15 @@ def runTasks(t: Seq[String])(implicit ev: eval.Evaluator) = T.task {
   mill.main.MainModule.evaluateTasks(
     ev,
     t.flatMap(x => x +: Seq("+")).flatMap(x => x.split(" ")).dropRight(1),
-    mill.define.SelectMode.Separated
+    mill.define.SelectMode.Separated,
   )(identity)
 }
 def lint(implicit ev: eval.Evaluator) = T.command {
   runTasks(
     Seq(
       "plugin.fix",
-      "mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources"
-    )
+      "mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources",
+    ),
   )
 }
 def deps(implicit ev: eval.Evaluator) = T.command {
