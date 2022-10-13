@@ -1,5 +1,5 @@
 package com.carlosedp
-package milldockernativeimage
+package milldockernative
 
 import mill._
 import mill.scalalib.JavaModule
@@ -132,7 +132,7 @@ trait DockerNative { outer: JavaModule =>
     final def build = T {
       val dest = T.dest
 
-      val asmPath = outer.assembly().path
+      val asmPath = nativeImage().path
       os.copy(asmPath, dest / asmPath.last)
 
       os.write(dest / "Dockerfile", dockerfile())
