@@ -1,10 +1,10 @@
 package com.carlosedp
 package milldockernative
 
+import io.github.alexarchambault.millnativeimage.NativeImage
 import mill._
 import mill.scalalib.JavaModule
 import os.Shellable.IterableShellable
-import io.github.alexarchambault.millnativeimage.NativeImage
 
 import scala.collection.immutable._
 

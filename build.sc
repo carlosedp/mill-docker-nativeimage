@@ -1,5 +1,5 @@
 import $ivy.`com.goyeau::mill-scalafix::0.2.10`
-import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.2.0`
+import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.3.0`
 import $ivy.`io.chris-kipp::mill-ci-release::0.1.1`
 
 import mill._
@@ -14,7 +14,7 @@ import de.tobiasroeser.mill.vcs.version.VcsVersion
 import io.kipp.mill.ci.release.CiReleaseModule
 
 // Used versions
-val millVersion = "0.10.0"
+val millVersion = "0.10.8"
 val scala213 = "2.13.8"
 val millnativeimage_plugin = "0.1.21"
 val millvcsversion_plugin = "0.2.0"
@@ -52,6 +52,16 @@ object plugin
       )
     )
   )
+  def publishVersion: T[String] = T {
+    val isTag = T.ctx().env.get("GITHUB_REF").exists(_.startsWith("refs/tags"))
+    val state = VcsVersion.vcsState()
+    if (state.commitsSinceLastTag == 0 && isTag) {
+      state.stripV(state.lastTag.get)
+    } else {
+      val v = state.stripV(state.lastTag.get).split('.')
+      s"${v(0)}.${(v(1).toInt) + 1}-SNAPSHOT"
+    }
+  }
 
   override def sonatypeUri = "https://s01.oss.sonatype.org/service/local"
   override def sonatypeSnapshotUri =
@@ -73,4 +83,24 @@ object plugin
   override def scalafixIvyDeps = Agg(
     ivy"com.github.liancheng::organize-imports:0.6.0"
   )
+}
+
+// Toplevel commands and aliases
+def runTasks(t: Seq[String])(implicit ev: eval.Evaluator) = T.task {
+  mill.main.MainModule.evaluateTasks(
+    ev,
+    t.flatMap(x => x +: Seq("+")).flatMap(x => x.split(" ")).dropRight(1),
+    mill.define.SelectMode.Separated
+  )(identity)
+}
+def lint(implicit ev: eval.Evaluator) = T.command {
+  runTasks(
+    Seq(
+      "plugin.fix",
+      "mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources"
+    )
+  )
+}
+def deps(implicit ev: eval.Evaluator) = T.command {
+  mill.scalalib.Dependency.showUpdates(ev)
 }
