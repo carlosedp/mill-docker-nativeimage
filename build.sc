@@ -36,14 +36,14 @@ object plugin
   override def artifactName =
     s"${pluginName}_mill${millBinaryVersion(millVersion)}"
 
-  override def pomSettings = PomSettings(
+  def pomSettings = PomSettings(
     description =
-      "A Mill plugin to generate Docker images with the application native image (GraalVM binary).",
+      "A Mill plugin to generate Docker images with Native Image (GraalVM binary).",
     organization = "com.carlosedp",
     url = "https://github.com/carlosedp/mill-docker-nativeimage",
-    licenses = Seq(License.`MIT`),
-    versionControl = VersionControl
-      .github(owner = "carlosedp", repo = "mill-docker-nativeimage"),
+    licenses = Seq(License.MIT),
+    versionControl =
+      VersionControl.github("carlosedp", "mill-docker-nativeimage"),
     developers = Seq(
       Developer(
         "carlosedp",
@@ -52,6 +52,7 @@ object plugin
       )
     )
   )
+
   def publishVersion: T[String] = T {
     val isTag = T.ctx().env.get("GITHUB_REF").exists(_.startsWith("refs/tags"))
     val state = VcsVersion.vcsState()
@@ -103,4 +104,10 @@ def lint(implicit ev: eval.Evaluator) = T.command {
 }
 def deps(implicit ev: eval.Evaluator) = T.command {
   mill.scalalib.Dependency.showUpdates(ev)
+}
+def testall(implicit ev: eval.Evaluator) = T.command {
+  runTasks(Seq("plugin.test"))
+}
+def pub(implicit ev: eval.Evaluator) = T.command {
+  runTasks(Seq("io.kipp.mill.ci.release.ReleaseModule/publishAll"))
 }
