@@ -43,31 +43,31 @@ jobs:
     - name: Run tests for all versions
       run: ./mill testall
 
-  code-coverage:
-    needs: [test]
-    runs-on: ubuntu-latest
+  # code-coverage:
+  #   needs: [test]
+  #   runs-on: ubuntu-latest
 
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+  #   steps:
+  #   - name: Checkout
+  #     uses: actions/checkout@v3
+  #     with:
+  #       fetch-depth: 0
 
-    - name: Setup Java
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: 17
+  #   - name: Setup Java
+  #     uses: actions/setup-java@v3
+  #     with:
+  #       distribution: 'temurin'
+  #       java-version: 17
 
-    - name: Cache packages
-      uses: coursier/cache-action@v6
-      id: coursier-cache
+  #   - name: Cache packages
+  #     uses: coursier/cache-action@v6
+  #     id: coursier-cache
 
-    - name: Run code coverage
-      run: ./mill coverage
+  #   - name: Run code coverage
+  #     run: ./mill coverage
 
-    - name: Upload coverage to Codecov
-      uses: codecov/codecov-action@v3
+  #   - name: Upload coverage to Codecov
+  #     uses: codecov/codecov-action@v3
 
   publish-snapshot:
     needs: [test]
