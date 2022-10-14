@@ -28,7 +28,6 @@ jobs:
       uses: graalvm/setup-graalvm@v1
       with:
         version: '22.2.0'
-        distribution: 'temurin'
         java-version: ${{ matrix.jvm }}
         components: 'native-image'
 
@@ -40,8 +39,8 @@ jobs:
       run: ./mill mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources
       if: startsWith(matrix.jvm, '17')
 
-    - name: Run tests for all versions
-      run: ./mill testall
+    # - name: Run tests for all versions
+    #   run: ./mill testall
 
   # code-coverage:
   #   needs: [test]
@@ -84,8 +83,7 @@ jobs:
         uses: graalvm/setup-graalvm@v1
         with:
           version: '22.2.0'
-          distribution: 'temurin'
-          java-version: ${{ matrix.jvm }}
+          java-version: '17'
           components: 'native-image'
 
       - name: Cache packages
@@ -114,8 +112,7 @@ jobs:
         uses: graalvm/setup-graalvm@v1
         with:
           version: '22.2.0'
-          distribution: 'temurin'
-          java-version: ${{ matrix.jvm }}
+          java-version: '17'
           components: 'native-image'
 
       - name: Cache packages
