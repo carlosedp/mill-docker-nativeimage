@@ -63,6 +63,8 @@ mill myApp.dockerNative.push
 docker run docker.io/myuser/myApp
 ```
 
+A more detailed build for a ZIO-http sample application with Native, Docker and DockerNative builds can be seen at the [zio-scalajs-stack][zio-scalajs-stack-build] project. Also there are some bugs running a Native Image binary for a Scala 3 project as seen [here][nativeimage-bug].
+
 ### Configuration
 
 Docker image configuration parameters:
@@ -127,3 +129,5 @@ This plugin would not be possible without the amazing work in the [mill-docker-p
 [mill-native-image]: https://github.com/alexarchambault/mill-native-image
 [mill-native-image-src]: https://github.com/alexarchambault/mill-native-image/blob/master/plugin/src/io/github/alexarchambault/millnativeimage/NativeImage.scala
 [graalvm-install]: https://www.graalvm.org/22.1/reference-manual/native-image/
+[zio-scalajs-stack-build]: https://github.com/carlosedp/zio-scalajs-stack/blob/5c9e2817480ba7ef263770108197a36ff493dea7/build.sc#L51
+[nativeimage-bug]: https://github.com/carlosedp/zio-scalajs-stack/issues/8
