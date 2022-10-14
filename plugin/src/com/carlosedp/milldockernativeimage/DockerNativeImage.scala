@@ -18,7 +18,7 @@ trait DockerNative { outer: JavaModule =>
      */
     def tags:          T[Seq[String]]         = T(List(outer.artifactName()))
     def labels:        T[Map[String, String]] = Map.empty[String, String]
-    def baseImage:     T[String]              = "gcr.io/distroless/base:latest"
+    def baseImage:     T[String]              = "redhat/ubi8"
     def pullBaseImage: T[Boolean]             = T(baseImage().endsWith(":latest"))
 
     /**
