@@ -1,0 +1,31 @@
+name: Regenerate Readme (on new tags)
+
+on:
+  push:
+    branches: [ main ]
+    tags: ["*"]
+
+jobs:
+  regenerate-readme:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Sleep for 20 minutes while repository metadata is updated
+        run: sleep 20m
+        shell: bash
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Generate Readme from template
+        run: |
+          chmod +x ./scripts/updateReadme.sh
+          ./scripts/updateReadme.sh
+
+      - name: Add and Commit file
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          message: 'Update library versions on Readme'
+          push: origin HEAD:main
