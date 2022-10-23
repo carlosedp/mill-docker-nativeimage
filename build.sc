@@ -17,7 +17,7 @@ object versions {
   val millVersion            = "0.10.8"
   val scala213               = "2.13.10"
   val semanticdb             = "4.5.13"
-  val millnativeimage_plugin = "0.1.21"
+  val millnativeimage_plugin = "0.1.22"
   val millvcsversion_plugin  = "0.3.0"
   val organizeimports        = "0.6.0"
   val utest                  = "0.8.1"
@@ -26,8 +26,6 @@ val pluginName = "mill-docker-nativeimage"
 
 object plugin extends ScalaModule with CiReleaseModule with ScalafixModule with ScalafmtModule {
   def scalaVersion = versions.scala213
-  // override def ivyDeps = super.ivyDeps() ++ Agg(
-  // )
 
   override def ivyDeps = super.ivyDeps() ++ Agg(
     ivy"com.lihaoyi::mill-scalalib:${versions.millVersion}",
@@ -74,9 +72,7 @@ object plugin extends ScalaModule with CiReleaseModule with ScalafixModule with 
   override def sonatypeSnapshotUri =
     "https://s01.oss.sonatype.org/content/repositories/snapshots"
 
-  object test extends Tests with TestModule.ScalaTest {
-    def ivyDeps = Agg(ivy"com.lihaoyi::utest:${versions.utest}")
-  }
+  object test extends Tests with TestModule.ScalaTest {}
 }
 
 // Toplevel commands and aliases

@@ -15,7 +15,7 @@ The plugin provides a trait to configure the native build and container image, i
 To start using this plugin you'll want to include the following import in your build file:
 
 ```scala
-import $ivy.`com.carlosedp::mill-docker-nativeimage::0.1.0`  //ReleaseVerMill
+import $ivy.`com.carlosedp::mill-docker-nativeimage::0.1.1`  //ReleaseVerMill
 import com.carlosedp.milldockernative.DockerNative
 ```
 
