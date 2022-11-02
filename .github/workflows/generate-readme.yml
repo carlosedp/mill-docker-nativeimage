@@ -5,6 +5,10 @@ on:
     branches: [ main ]
     tags: ["*"]
 
+concurrency:
+  group: readme-gen
+  cancel-in-progress: true
+
 jobs:
   regenerate-readme:
     runs-on: ubuntu-latest
