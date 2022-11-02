@@ -5,7 +5,7 @@ import mill.scalalib.publish._
 import mill.scalalib.api.ZincWorkerUtil
 import mill.scalalib.api.Util.scalaNativeBinaryVersion
 
-import $ivy.`com.goyeau::mill-scalafix::0.2.10`
+import $ivy.`com.goyeau::mill-scalafix::0.2.11`
 import com.goyeau.mill.scalafix.ScalafixModule
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.3.0`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
