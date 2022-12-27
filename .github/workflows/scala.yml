@@ -27,8 +27,9 @@ jobs:
     - name: Setup Java
       uses: graalvm/setup-graalvm@v1
       with:
-        version: '22.2.0'
         java-version: ${{ matrix.jvm }}
+        version: '22.3.0'
+        github-token: ${{ secrets.GITHUB_TOKEN }}
         components: 'native-image'
 
     - name: Cache packages
@@ -82,8 +83,9 @@ jobs:
       - name: Setup Java
         uses: graalvm/setup-graalvm@v1
         with:
-          version: '22.2.0'
           java-version: '17'
+          version: '22.3.0'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           components: 'native-image'
 
       - name: Cache packages
@@ -111,8 +113,9 @@ jobs:
       - name: Setup Java
         uses: graalvm/setup-graalvm@v1
         with:
-          version: '22.2.0'
           java-version: '17'
+          version: '22.3.0'
+          github-token: ${{ secrets.GITHUB_TOKEN }}
           components: 'native-image'
 
       - name: Cache packages
