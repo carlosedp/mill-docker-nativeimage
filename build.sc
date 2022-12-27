@@ -9,12 +9,12 @@ import $ivy.`com.goyeau::mill-scalafix::0.2.11`
 import com.goyeau.mill.scalafix.ScalafixModule
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.3.0`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
-import $ivy.`io.chris-kipp::mill-ci-release::0.1.4`
+import $ivy.`io.chris-kipp::mill-ci-release::0.1.5`
 import io.kipp.mill.ci.release.{CiReleaseModule, SonatypeHost}
 
 // Used versions
 object versions {
-  val millVersion            = "0.10.8"
+  val millVersions           = Seq("0.10.0")
   val scala213               = "2.13.10"
   val semanticdb             = "4.5.13"
   val millnativeimage_plugin = "0.1.22"
@@ -24,13 +24,19 @@ object versions {
 }
 val pluginName = "mill-docker-nativeimage"
 
-object plugin extends ScalaModule with CiReleaseModule with ScalafixModule with ScalafmtModule {
-  def scalaVersion = versions.scala213
+def millBinaryVersion(millVersion: String) = scalaNativeBinaryVersion(
+  millVersion,
+)
+
+object plugin extends Cross[Plugin](versions.millVersions: _*)
+class Plugin(millVersion: String) extends ScalaModule with CiReleaseModule with ScalafixModule with ScalafmtModule {
+  override def millSourcePath = super.millSourcePath / os.up
+  def scalaVersion            = versions.scala213
 
   override def ivyDeps = super.ivyDeps() ++ Agg(
-    ivy"com.lihaoyi::mill-scalalib:${versions.millVersion}",
-    ivy"de.tototec::de.tobiasroeser.mill.vcs.version_mill0.10::${versions.millvcsversion_plugin}",
-    ivy"io.github.alexarchambault.mill::mill-native-image_mill0.10::${versions.millnativeimage_plugin}",
+    ivy"com.lihaoyi::mill-scalalib:${millVersion}",
+    ivy"de.tototec::de.tobiasroeser.mill.vcs.version_mill${millBinaryVersion(millVersion)}::${versions.millvcsversion_plugin}",
+    ivy"io.github.alexarchambault.mill::mill-native-image_mill${millBinaryVersion(millVersion)}::${versions.millnativeimage_plugin}",
   )
   override def scalacOptions = Seq("-Ywarn-unused", "-deprecation")
 
@@ -40,7 +46,7 @@ object plugin extends ScalaModule with CiReleaseModule with ScalafixModule with 
   def scalacPluginIvyDeps =
     super.scalacPluginIvyDeps() ++ Agg(ivy"org.scalameta:::semanticdb-scalac:${versions.semanticdb}")
 
-  override def artifactName = s"${pluginName}_mill${scalaNativeBinaryVersion(versions.millVersion)}"
+  override def artifactName = s"${pluginName}_mill${millBinaryVersion(millVersion)}"
 
   def pomSettings = PomSettings(
     description    = "A Mill plugin to generate Docker images with Native Image (GraalVM binary).",
