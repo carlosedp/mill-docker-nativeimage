@@ -14,7 +14,7 @@ import io.kipp.mill.ci.release.{CiReleaseModule, SonatypeHost}
 
 // Used versions
 object versions {
-  val millVersions           = Seq("0.10.10")
+  val millVersions           = Seq("0.10.0")
   val scala213               = "2.13.10"
   val semanticdb             = "4.5.13"
   val millnativeimage_plugin = "0.1.23"
