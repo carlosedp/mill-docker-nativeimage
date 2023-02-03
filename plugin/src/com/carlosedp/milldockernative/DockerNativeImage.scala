@@ -16,10 +16,11 @@ trait DockerNative { outer: JavaModule =>
      * Tags that should be applied to the built image In the standard
      * registry/repository:tag format
      */
-    def tags:          T[Seq[String]]         = T(List(outer.artifactName()))
-    def labels:        T[Map[String, String]] = Map.empty[String, String]
-    def baseImage:     T[String]              = "docker.io/redhat/ubi8"
-    def pullBaseImage: T[Boolean]             = T(baseImage().endsWith(":latest"))
+    def tags:            T[Seq[String]]         = T(List(outer.artifactName()))
+    def labels:          T[Map[String, String]] = Map.empty[String, String]
+    def baseImage:       T[String]              = "docker.io/redhat/ubi8"
+    def pullBaseImage:   T[Boolean]             = T(baseImage().endsWith(":latest"))
+    def coursierVersion: T[String]              = "v2.1.0-RC5"
 
     /**
      * TCP Ports the container will listen to at runtime.
@@ -134,6 +135,44 @@ trait DockerNative { outer: JavaModule =>
          |COPY $nativeBinName /$nativeBinName
          |ENTRYPOINT ["/$nativeBinName"]
          |$cmdArgs""".stripMargin
+    }
+
+    //  The image that will be generated to build the native image
+    def baseDockerImage = T("nativeimagebase:22.04")
+    def buildBaseDockerImage = T.input {
+      os.proc("docker", "build", "-t", baseDockerImage(), ".", "-f", writeDockerFile()).call(check = false)
+      baseDockerImage()
+    }
+    def baseDockerFile = T {
+      s"""FROM ubuntu:22.04
+            RUN apt-get update -q -y && apt-get install -q -y build-essential libz-dev locales --no-install-recommends
+            RUN locale-gen en_US.UTF-8
+            ENV LANG en_US.UTF-8
+            ENV LANGUAGE en_US:en
+            ENV LC_ALL en_US.UTF-8""".stripMargin
+    }
+    def writeDockerFile = T {
+      val filename = "Dockerfile.nativeimagebase"
+      os.write.over(
+        T.dest / filename,
+        baseDockerFile(),
+      )
+      T.dest / filename.toString()
+    }
+
+    // Build native image on a Docker container if not running on Linux
+    override def nativeImageDockerParams = T {
+      if (sys.props.get("os.name").contains("Linux") == false) {
+        Some(
+          NativeImage.DockerParams(
+            imageName      = buildBaseDockerImage(),
+            prepareCommand = "",
+            csUrl =
+              s"https://github.com/coursier/coursier/releases/download/${coursierVersion()}/cs-${sys.props.get("os.arch").get}-pc-linux.gz",
+            extraNativeImageArgs = Nil,
+          ),
+        )
+      } else { Option.empty[NativeImage.DockerParams] }
     }
 
     final def build = T {

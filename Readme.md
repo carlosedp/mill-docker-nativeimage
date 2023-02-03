@@ -6,16 +6,34 @@ The inspiration came from Quarkus framework which generates applications that ar
 
 The plugin allows building very small containers and the application packed as a binary produces blazing fast startup times.
 
+As a comparison, below the start time for the same application packed in an assembly with it's JAR using a JDK image compared to the native binary built with GraalVM in a Ubuntu image:
+
+```plain
+# Native Image
+❯ date +%Y-%m-%dT%H:%M:%S.%N && docker run -it -p 8080:8080 --rm carlosedp/zioscalajs-backend-native
+2023-02-03T14:30:06.536864570
+{"timestamp":"2023-02-03T14:30:07.177923Z     ","level":"INFO","thread":"zio-fiber-6","message":"Server started at http://localhost:8080"}
+{"timestamp":"2023-02-03T14:30:07.178301Z     ","level":"INFO","thread":"zio-fiber-6","message":"Started gaugetest with random Double every second"}
+
+# JDK
+❯ date +%Y-%m-%dT%H:%M:%S.%N && docker run -it -p 8080:8080 --rm carlosedp/zioscalajs-backend-jdk
+2023-02-03T14:30:14.004191633
+{"timestamp":"2023-02-03T14:30:16.548346423Z  ","level":"INFO","thread":"zio-fiber-6","message":"Server started at http://localhost:8080"}
+{"timestamp":"2023-02-03T14:30:16.698928238Z  ","level":"INFO","thread":"zio-fiber-6","message":"Started gaugetest with random Double every second"}
+```
+
+As seen, the native version starts in 0,64105843 seconds versus 2,54415479 from the JDK version from launch to the first log message.
+
 ## Getting Started
 
-The plugin provides a trait to configure the native build and container image, in addition there are two commands, one for building the Docker image and another to push the image to the registry. The runtime must be already authenticated for this.
+The plugin provides a trait to configure the native build and container image, in addition there are two commands, one for building the Docker image and another to push the image to the registry. To push the image, the container runtime (Docker) must be already authenticated in your registry or DockerHub.
 
 ### Installing the Plugin
 
 To start using this plugin you'll want to include the following import in your build file:
 
 ```scala
-import $ivy.`com.carlosedp::mill-docker-nativeimage::0.2.0`  //ReleaseVerMill
+import $ivy.`com.carlosedp::mill-docker-nativeimage::0.3.0`  //ReleaseVerMill
 import com.carlosedp.milldockernative.DockerNative
 ```
 
@@ -26,26 +44,31 @@ Under the hood, the plugin uses [mill-native-image][mill-native-image] to build 
 Sample configuration:
 
 ```scala
-object myApp extends ScalaModule with DockerNative {
+import mill._, mill.scalalib._, mill.scalalib.scalafmt._
+import $ivy.`com.carlosedp::mill-docker-nativeimage::0.4-SNAPSHOT`
+import com.carlosedp.milldockernative.DockerNative
+
+object hello extends ScalaModule with DockerNative {
+  def scalaVersion = "3.3.0-RC2"
   // def ivyDeps = ...
+//   def nativeImageClassPath = runClasspath()
   object dockerNative extends DockerNativeConfig {
-    // Some Native Image parameters
-    def nativeImageName = "myAppName"
-    def nativeImageGraalVmJvmId = T {
-      sys.env.getOrElse("GRAALVM_ID", "graalvm-java17:22.2.0")
-    }
-    def nativeImageClassPath = runClasspath()
-    def nativeImageMainClass = "com.domain.myClass"
-    def nativeImageOptions = Seq( // Some parameters, depending on your application
+    // Native Image parameters
+    def nativeImageName         = "hello"
+    def nativeImageGraalVmJvmId = T("graalvm-java17:22.3.1")
+    def nativeImageClassPath    = runClasspath()
+    def nativeImageMainClass    = "com.domain.Hello.Hello"
+    // GraalVM parameters depending on your application needs
+    def nativeImageOptions = Seq(
       "--no-fallback",
       "--enable-url-protocols=http,https",
       "-Djdk.http.auth.tunneling.disabledSchemes=",
-      "--allow-incomplete-classpath",
-    )
+    ) ++ (if (sys.props.get("os.name").contains("Linux")) Seq("--static") else Seq.empty)
 
-    // Some Docker image parameters
-    def tags                 = List("docker.io/myuser/myApp")
-    def exposedPorts         = Seq(8080)
+    // Docker image parameters
+    def baseImage    = "ubuntu:22.04"
+    def tags         = List("docker.io/myuser/helloapp")
+    def exposedPorts = Seq(8080)
   }
 
   object test extends Tests {
@@ -57,13 +80,18 @@ object myApp extends ScalaModule with DockerNative {
 Build and Push with:
 
 ```sh
-mill myApp.dockerNative.build
-mill myApp.dockerNative.push
+mill hello.dockerNative.build
 
-docker run docker.io/myuser/myApp
+# Test run
+docker run -it --rm docker.io/myuser/helloapp
+
+# Push to a registry
+mill hello.dockerNative.push
 ```
 
-A more detailed build for a ZIO-http sample application with Native, Docker and DockerNative builds can be seen at the [zio-scalajs-stack][zio-scalajs-stack-build] project. Also there are some bugs running a Native Image binary for a Scala 3 project as seen [here][nativeimage-bug].
+A sample project is provided in [./example](./example) where above commands work.
+
+A more detailed build for a ZIO-http sample application with Native, Docker and DockerNative builds can be seen at the [zio-scalajs-stack][zio-scalajs-stack-build] project. Running a Native Image binary for a Scala 3 project requires Scala 3.3 due to a bug described [here][nativeimage-bug].
 
 ### Configuration
 
@@ -78,6 +106,8 @@ def baseImage = "redhat/ubi8"
 // By default this is true if the base image is using a latest tag
 def pullBaseImage = true
 // Add container metadata via the LABEL instruction
+// Version of Coursier to be used to pull Scala dependencies in the build image
+def coursierVersion: T[String]              = "v2.1.0-RC5"
 def labels = Map("version" -> "1.0")
 // TCP ports the container will listen to
 def exposedPorts = Seq(8080, 443)
