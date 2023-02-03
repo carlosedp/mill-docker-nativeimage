@@ -91,6 +91,12 @@ mill hello.dockerNative.push
 
 A sample project is provided in [./example](./example) where above commands work.
 
+If only the GraalVM native image binary is required to be built on a Docker container (for Linux), there is a convenience task:
+
+```sh
+mill hello.dockerNative.buildBin
+```
+
 A more detailed build for a ZIO-http sample application with Native, Docker and DockerNative builds can be seen at the [zio-scalajs-stack][zio-scalajs-stack-build] project. Running a Native Image binary for a Scala 3 project requires Scala 3.3 due to a bug described [here][nativeimage-bug].
 
 ### Configuration

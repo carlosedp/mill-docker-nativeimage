@@ -175,6 +175,20 @@ trait DockerNative { outer: JavaModule =>
       } else { Option.empty[NativeImage.DockerParams] }
     }
 
+    /**
+     * Convenience task to build the Linux Native Image binary of the
+     * application in a Docker container
+     */
+    final def buildBin = T {
+      val asmPath = nativeImage().path
+      asmPath
+    }
+
+    /**
+     * Builds a Docker Image containing the Native Image binary of the
+     * application The native image is built in a Docker container if host
+     * operating system is not Linux
+     */
     final def build = T {
       val dest = T.dest
 
@@ -201,6 +215,9 @@ trait DockerNative { outer: JavaModule =>
       tags()
     }
 
+    /**
+     * Push the generated Docker image to a registry
+     */
     final def push() = T.command {
       val tags = build()
       tags.foreach(t =>
