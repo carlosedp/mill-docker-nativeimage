@@ -21,6 +21,14 @@ trait DockerNative { outer: JavaModule =>
     def baseImage:       T[String]              = "docker.io/redhat/ubi8"
     def pullBaseImage:   T[Boolean]             = T(baseImage().endsWith(":latest"))
     def coursierVersion: T[String]              = "v2.1.0-RC5"
+    def baseDockerImage: T[String]              = "nativeimagebase:graalvm"
+    def baseDockerFile: T[String] =
+      s"""FROM ubuntu:22.04
+          RUN apt-get update -q -y && apt-get install -q -y build-essential libz-dev locales --no-install-recommends
+          RUN locale-gen en_US.UTF-8
+          ENV LANG en_US.UTF-8
+          ENV LANGUAGE en_US:en
+          ENV LC_ALL en_US.UTF-8""".stripMargin
 
     /**
      * TCP Ports the container will listen to at runtime.
@@ -138,18 +146,9 @@ trait DockerNative { outer: JavaModule =>
     }
 
     //  The image that will be generated to build the native image
-    def baseDockerImage = T("nativeimagebase:22.04")
     def buildBaseDockerImage = T.input {
       os.proc("docker", "build", "-t", baseDockerImage(), ".", "-f", writeDockerFile()).call(check = false)
       baseDockerImage()
-    }
-    def baseDockerFile = T {
-      s"""FROM ubuntu:22.04
-            RUN apt-get update -q -y && apt-get install -q -y build-essential libz-dev locales --no-install-recommends
-            RUN locale-gen en_US.UTF-8
-            ENV LANG en_US.UTF-8
-            ENV LANGUAGE en_US:en
-            ENV LC_ALL en_US.UTF-8""".stripMargin
     }
     def writeDockerFile = T {
       val filename = "Dockerfile.nativeimagebase"

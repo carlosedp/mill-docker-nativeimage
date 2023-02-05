@@ -101,9 +101,21 @@ A more detailed build for a ZIO-http sample application with Native, Docker and 
 
 ### Configuration
 
-Docker image configuration parameters:
+Image configuration parameters defined in `DockerNativeConfig` trait:
 
 ```scala
+//
+// These are the parameters to customize the image used to build the GraalVM Native Image binary
+//
+// Version of Coursier to be used to pull Scala dependencies in the build image
+def coursierVersion: T[String] = "v2.1.0-RC5"
+// Override the name of the image that will be generated to build the GraalVM Native Image
+def baseDockerImage: T[String] = "mybasebuild"
+// Override the DockerFile used to build the GraalVM Native Image
+def baseDockerFile: T[String] = s"""FROM IMAGE:VERSION..."""
+//
+// These are the parameters to customize the output container image with the application
+//
 // Override tags to set the output image name
 def tags = List("docker.io/myuser/myApp")
 // Overrides base container image, default value below
@@ -112,8 +124,6 @@ def baseImage = "redhat/ubi8"
 // By default this is true if the base image is using a latest tag
 def pullBaseImage = true
 // Add container metadata via the LABEL instruction
-// Version of Coursier to be used to pull Scala dependencies in the build image
-def coursierVersion: T[String]              = "v2.1.0-RC5"
 def labels = Map("version" -> "1.0")
 // TCP ports the container will listen to
 def exposedPorts = Seq(8080, 443)
@@ -142,7 +152,7 @@ Native Image parameters:
 // Define the output binary name
 def nativeImageName = "myAppName"
 // Set the GraalVM version
-def nativeImageGraalVmJvmId = T {sys.env.getOrElse("GRAALVM_ID", "graalvm-java17:22.2.0")}
+def nativeImageGraalVmJvmId = T {"graalvm-java17:22.3.1"}
 // Define the classpath
 def nativeImageClassPath = runClasspath()
 // Define your application main class
