@@ -24,12 +24,19 @@ object versions {
 }
 val pluginName = "mill-docker-nativeimage"
 
-def millBinaryVersion(millVersion: String) = scalaNativeBinaryVersion(
+def millBinaryVersion(
+  millVersion: String,
+) = scalaNativeBinaryVersion(
   millVersion,
 )
 
 object plugin extends Cross[Plugin](versions.millVersions: _*)
-class Plugin(millVersion: String) extends ScalaModule with CiReleaseModule with ScalafixModule with ScalafmtModule {
+class Plugin(
+  millVersion: String,
+) extends ScalaModule
+  with CiReleaseModule
+  with ScalafixModule
+  with ScalafmtModule {
   override def millSourcePath = super.millSourcePath / os.up
   def scalaVersion            = versions.scala213
 
@@ -79,14 +86,20 @@ class Plugin(millVersion: String) extends ScalaModule with CiReleaseModule with 
 }
 
 // Toplevel commands and aliases
-def runTasks(t: Seq[String])(implicit ev: eval.Evaluator) = T.task {
+def runTasks(
+  t: Seq[String],
+)(
+  implicit ev: eval.Evaluator,
+) = T.task {
   mill.main.MainModule.evaluateTasks(
     ev,
     t.flatMap(x => x +: Seq("+")).flatMap(x => x.split(" ")).dropRight(1),
     mill.define.SelectMode.Separated,
   )(identity)
 }
-def lint(implicit ev: eval.Evaluator) = T.command {
+def lint(
+  implicit ev: eval.Evaluator,
+) = T.command {
   runTasks(
     Seq(
       "plugin.fix",
@@ -94,12 +107,18 @@ def lint(implicit ev: eval.Evaluator) = T.command {
     ),
   )
 }
-def deps(implicit ev: eval.Evaluator) = T.command {
+def deps(
+  implicit ev: eval.Evaluator,
+) = T.command {
   mill.scalalib.Dependency.showUpdates(ev)
 }
-def testall(implicit ev: eval.Evaluator) = T.command {
+def testall(
+  implicit ev: eval.Evaluator,
+) = T.command {
   runTasks(Seq("plugin.test"))
 }
-def pub(implicit ev: eval.Evaluator) = T.command {
+def pub(
+  implicit ev: eval.Evaluator,
+) = T.command {
   runTasks(Seq("io.kipp.mill.ci.release.ReleaseModule/publishAll"))
 }
