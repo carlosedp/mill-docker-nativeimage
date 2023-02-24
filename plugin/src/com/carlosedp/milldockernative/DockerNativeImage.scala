@@ -95,7 +95,12 @@ trait DockerNative { outer: JavaModule =>
      */
     def executable: T[String] = "docker"
 
-    private def baseImageCacheBuster: T[(Boolean, Double)] = T.input {
+    private def baseImageCacheBuster: T[
+      (
+        Boolean,
+        Double,
+      ),
+    ] = T.input {
       val pull = pullBaseImage()
       if (pull) (pull, Math.random()) else (pull, 0d)
     }
@@ -217,7 +222,8 @@ trait DockerNative { outer: JavaModule =>
     /**
      * Push the generated Docker image to a registry
      */
-    final def push() = T.command {
+    final def push(
+    ) = T.command {
       val tags = build()
       tags.foreach(t =>
         os.proc(executable(), "push", t)
