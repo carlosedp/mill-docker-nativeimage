@@ -14,7 +14,8 @@ object MainApp extends ZIOAppDefault {
 }
 
 object RootRoute {
-  def apply(): Http[Any, Nothing, Request, Response] =
+  def apply(
+  ): Http[Any, Nothing, Request, Response] =
     Http.collectZIO[Request] { case Method.GET -> !! =>
       ZIO.succeed(Response.text("Hello World!"))
     }
