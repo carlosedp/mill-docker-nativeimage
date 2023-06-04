@@ -18,7 +18,7 @@ object versions {
   val scala213               = "2.13.10"
   val semanticdb             = "4.5.13"
   val millnativeimage_plugin = "0.1.23"
-  val millvcsversion_plugin  = "0.3.1"
+  val millvcsversion_plugin  = "0.3.0"
   val organizeimports        = "0.6.0"
   val utest                  = "0.8.1"
 }
