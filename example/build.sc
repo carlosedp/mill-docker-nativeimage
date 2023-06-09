@@ -1,9 +1,9 @@
 import mill._, mill.scalalib._, mill.scalalib.scalafmt._
-import $ivy.`com.carlosedp::mill-docker-nativeimage::0.4-SNAPSHOT`
+import $ivy.`com.carlosedp::mill-docker-nativeimage::0.6.0`
 import com.carlosedp.milldockernative.DockerNative
 
 object hello extends ScalaModule with DockerNative {
-  def scalaVersion = "3.3.0-RC2"
+  def scalaVersion = "3.3.0"
   def ivyDeps = Agg(
     ivy"dev.zio::zio:2.0.6",
     ivy"dev.zio::zio-http:0.0.3",
