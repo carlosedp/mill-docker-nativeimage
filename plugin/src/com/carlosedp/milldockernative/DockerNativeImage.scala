@@ -96,10 +96,9 @@ trait DockerNative { outer: JavaModule =>
     def executable: T[String] = "docker"
 
     private def baseImageCacheBuster: T[
-      (
-        Boolean,
+      (Boolean,
         Double,
-      ),
+      )
     ] = T.input {
       val pull = pullBaseImage()
       if (pull) (pull, Math.random()) else (pull, 0d)
