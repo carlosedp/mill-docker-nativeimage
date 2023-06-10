@@ -95,12 +95,7 @@ trait DockerNative { outer: JavaModule =>
      */
     def executable: T[String] = "docker"
 
-    private def baseImageCacheBuster: T[
-      (
-        Boolean,
-        Double,
-      ),
-    ] = T.input {
+    private def baseImageCacheBuster: T[(Boolean, Double)] = T.input {
       val pull = pullBaseImage()
       if (pull) (pull, Math.random()) else (pull, 0d)
     }
@@ -169,12 +164,12 @@ trait DockerNative { outer: JavaModule =>
       if (sys.props.get("os.name").contains("Linux") == false) {
         Some(
           NativeImage.DockerParams(
-            imageName      = buildBaseDockerImage(),
+            imageName = buildBaseDockerImage(),
             prepareCommand = "",
             csUrl =
               s"https://github.com/coursier/coursier/releases/download/${coursierVersion()}/cs-${sys.props.get("os.arch").get}-pc-linux.gz",
             extraNativeImageArgs = Nil,
-          ),
+          )
         )
       } else { Option.empty[NativeImage.DockerParams] }
     }
@@ -214,7 +209,7 @@ trait DockerNative { outer: JavaModule =>
 
       log.info(
         s"Docker build completed ${if (result.exitCode == 0) "successfully"
-          else "unsuccessfully"} with ${result.exitCode}",
+          else "unsuccessfully"} with ${result.exitCode}"
       )
       tags()
     }
@@ -227,7 +222,7 @@ trait DockerNative { outer: JavaModule =>
       val tags = build()
       tags.foreach(t =>
         os.proc(executable(), "push", t)
-          .call(stdout = os.Inherit, stderr = os.Inherit),
+          .call(stdout = os.Inherit, stderr = os.Inherit)
       )
     }
   }

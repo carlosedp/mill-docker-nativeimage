@@ -2,10 +2,10 @@ name: Scala CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     tags: ["*"]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 concurrency:
   group: ${{ github.ref }}
@@ -15,30 +15,30 @@ jobs:
   test:
     strategy:
       matrix:
-        jvm: [ '11', '17' ]
+        jvm: ["11", "17"]
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout
-      uses: actions/checkout@v3
-      with:
-        fetch-depth: 0
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
 
-    - name: Setup Java
-      uses: graalvm/setup-graalvm@v1
-      with:
-        java-version: ${{ matrix.jvm }}
-        version: '22.3.0'
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        components: 'native-image'
+      - name: Setup Java
+        uses: graalvm/setup-graalvm@v1
+        with:
+          java-version: ${{ matrix.jvm }}
+          version: "22.3.0"
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          components: "native-image"
 
-    - name: Cache packages
-      uses: coursier/cache-action@v6
-      id: coursier-cache
+      - name: Cache packages
+        uses: coursier/cache-action@v6
+        id: coursier-cache
 
-    - name: Check Formatting
-      run: ./mill mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources
-      if: startsWith(matrix.jvm, '17')
+      - name: Check Formatting
+        run: ./mill mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources
+        if: startsWith(matrix.jvm, '17')
 
     # - name: Run tests for all versions
     #   run: ./mill testall
@@ -83,10 +83,10 @@ jobs:
       - name: Setup Java
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '17'
-          version: '22.3.0'
+          java-version: "17"
+          version: "22.3.0"
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          components: 'native-image'
+          components: "native-image"
 
       - name: Cache packages
         uses: coursier/cache-action@v6
@@ -113,10 +113,10 @@ jobs:
       - name: Setup Java
         uses: graalvm/setup-graalvm@v1
         with:
-          java-version: '17'
-          version: '22.3.0'
+          java-version: "17"
+          version: "22.3.0"
           github-token: ${{ secrets.GITHUB_TOKEN }}
-          components: 'native-image'
+          components: "native-image"
 
       - name: Cache packages
         uses: coursier/cache-action@v6
@@ -132,9 +132,6 @@ jobs:
 
       - name: Create Release for Tag
         id: release_tag
-        uses: Akryum/release-tag@conventional
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: ncipollo/release-action@v1
         with:
-          tag_name: ${{ github.ref }}
-          preset: angular # Use conventional-changelog preset
+          name: ${{ github.ref }}
