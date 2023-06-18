@@ -28,7 +28,7 @@ jobs:
         uses: graalvm/setup-graalvm@v1
         with:
           java-version: ${{ matrix.jvm }}
-          version: "22.3.0"
+          version: "latest"
           github-token: ${{ secrets.GITHUB_TOKEN }}
           components: "native-image"
 
@@ -84,7 +84,7 @@ jobs:
         uses: graalvm/setup-graalvm@v1
         with:
           java-version: "17"
-          version: "22.3.0"
+          version: "latest"
           github-token: ${{ secrets.GITHUB_TOKEN }}
           components: "native-image"
 
@@ -114,7 +114,7 @@ jobs:
         uses: graalvm/setup-graalvm@v1
         with:
           java-version: "17"
-          version: "22.3.0"
+          version: "latest"
           github-token: ${{ secrets.GITHUB_TOKEN }}
           components: "native-image"
 
