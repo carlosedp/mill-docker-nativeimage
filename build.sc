@@ -6,7 +6,7 @@ import mill.scalalib.api.ZincWorkerUtil.{scalaBinaryVersion, scalaNativeBinaryVe
 import coursier.Repositories
 import os.Path
 
-import $ivy.`com.goyeau::mill-scalafix::0.3.0`
+import $ivy.`com.goyeau::mill-scalafix::0.3.1`
 import com.goyeau.mill.scalafix.ScalafixModule
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.0`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
