@@ -17,7 +17,7 @@ import de.tobiasroeser.mill.integrationtest._
 
 // Used versions
 object versions {
-  val millVersions           = Seq("0.10.12", "0.11.0")
+  val millVersions           = Seq("0.10.12", "0.11.1")
   val millBinaryVersions     = millVersions.map(scalaNativeBinaryVersion)
   val scala213               = "2.13.11"
   val millnativeimage_plugin = "0.1.25"
