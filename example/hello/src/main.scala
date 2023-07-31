@@ -2,21 +2,20 @@ package com.domain.Main
 
 import zio.*
 import zio.http.*
-import zio.http.model.Method
 
-object MainApp extends ZIOAppDefault {
-  val port   = 8080
-  val config = ServerConfig.default.port(port)
+object MainApp extends ZIOAppDefault:
+  // Define ZIO-http server
+  val server: ZIO[Any, Throwable, Nothing] = Server
+    .serve(HomeApp)
+    .provide(
+      Server.default,
+    )
 
-  override val run =
-    Console.printLine(s"Started server on http://localhost:$port") *>
-      Server.serve(RootRoute()).provide(ServerConfig.live(config), Server.live)
-}
+  // Run main application
+  def run = Console.printLine(s"Server started on http://localhost:8080") *> server
 
-object RootRoute {
-  def apply(
-  ): Http[Any, Nothing, Request, Response] =
-    Http.collectZIO[Request] { case Method.GET -> !! =>
-      ZIO.succeed(Response.text("Hello World!"))
-    }
-}
+// Define ZIO-http route
+val HomeApp: Http[Any, Nothing, Request, Response] =
+  Http.collectZIO[Request]:
+    case Method.GET -> Root =>
+      ZIO.succeed(Response.text(s"Hello World"))

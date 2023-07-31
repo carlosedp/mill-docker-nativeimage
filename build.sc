@@ -2,9 +2,7 @@ import mill._
 import mill.scalalib._
 import mill.scalalib.scalafmt._
 import mill.scalalib.publish._
-import mill.scalalib.api.ZincWorkerUtil.{scalaBinaryVersion, scalaNativeBinaryVersion}
-import coursier.Repositories
-import os.Path
+import mill.scalalib.api.ZincWorkerUtil._
 
 import $ivy.`com.goyeau::mill-scalafix::0.3.1`
 import com.goyeau.mill.scalafix.ScalafixModule
@@ -14,42 +12,39 @@ import $ivy.`io.chris-kipp::mill-ci-release::0.1.9`
 import io.kipp.mill.ci.release.{CiReleaseModule, SonatypeHost}
 import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.7.1`
 import de.tobiasroeser.mill.integrationtest._
+import $ivy.`com.carlosedp::mill-aliases::0.4.1`
+import com.carlosedp.aliases._
 
-// Used versions
-object versions {
-  val millVersions           = Seq("0.10.12", "0.11.1")
-  val millBinaryVersions     = millVersions.map(scalaNativeBinaryVersion)
-  val scala213               = "2.13.11"
-  val millnativeimage_plugin = "0.1.25"
-  val organizeimports        = "0.6.0"
-  val utest                  = "0.8.1"
-}
+val millVersions           = Seq("0.10.12", "0.11.1")
+val scala213               = "2.13.11"
+val millnativeimage_plugin = "0.1.25"
+val utest                  = "0.8.1"
+val pluginName             = "mill-docker-nativeimage"
 
-def millBinaryVersion(millVersion: String) = scalaNativeBinaryVersion(millVersion)
-def millVersion(binaryVersion:     String) = versions.millVersions.find(v => millBinaryVersion(v) == binaryVersion).get
-
-object plugin extends Cross[MillcrossplatformCross](versions.millBinaryVersions: _*)
-class MillcrossplatformCross(millBinaryVersion: String)
-  extends ScalaModule
-  with CiReleaseModule
+object plugin extends Cross[Plugin](millVersions)
+trait Plugin  extends Cross.Module[String]
+  with ScalaModule
+  with Publish
   with ScalafixModule
   with ScalafmtModule {
-  def scalaVersion            = versions.scala213
-  override def millSourcePath = super.millSourcePath / os.up
-  override def scalacOptions  = super.scalacOptions() ++ Seq("-Ywarn-unused", "-deprecation", "-feature")
-  override def artifactName   = s"mill-docker-nativeimage_mill$millBinaryVersion"
+  val millVersion   = crossValue
+  def scalaVersion  = scala213
+  def artifactName  = s"${pluginName}_mill${scalaNativeBinaryVersion(millVersion)}"
+  def scalacOptions = super.scalacOptions() ++ Seq("-Ywarn-unused", "-deprecation", "-feature")
 
-  def scalafixIvyDeps                     = Agg(ivy"com.github.liancheng::organize-imports:${versions.organizeimports}")
-  override def scalafixScalaBinaryVersion = scalaBinaryVersion(versions.scala213)
-
-  def repositoriesTask = T.task {
-    super.repositoriesTask() ++ Seq(Repositories.sonatype("snapshots"), Repositories.sonatypeS01("snapshots"))
-  }
   override def ivyDeps = super.ivyDeps() ++ Agg(
-    ivy"com.lihaoyi::mill-scalalib:${millVersion(millBinaryVersion)}",
-    ivy"io.github.alexarchambault.mill::mill-native-image_mill$millBinaryVersion::${versions.millnativeimage_plugin}",
+    ivy"com.lihaoyi::mill-scalalib:${millVersion}",
+    ivy"io.github.alexarchambault.mill::mill-native-image_mill${scalaNativeBinaryVersion(millVersion)}::${millnativeimage_plugin}",
   )
 
+  override def sources = T.sources {
+    super.sources() ++ Seq(
+      millSourcePath / s"src-mill${scalaNativeBinaryVersion(millVersion)}"
+    ).map(PathRef(_))
+  }
+}
+
+trait Publish extends CiReleaseModule {
   def pomSettings = PomSettings(
     description = "A Mill plugin to generate Docker images with Native Image executable (GraalVM binary).",
     organization = "com.carlosedp",
@@ -78,42 +73,23 @@ class MillcrossplatformCross(millBinaryVersion: String)
   override def sonatypeHost = Some(SonatypeHost.s01)
 }
 
-object itest extends Cross[itestCross]("0.10.12", "0.11.0-M8")
-class itestCross(millVersion: String) extends MillIntegrationTestModule {
-  override def millSourcePath: Path =
-    super.millSourcePath / os.up / millVersion.split('.').take(2).mkString(".")
-  def millTestVersion = millVersion
-  def pluginsUnderTest = Seq(
-    `plugin`(millBinaryVersion(millVersion))
-  )
-  def testBase = millSourcePath / "src"
-}
+// object itest extends Cross[itestCross](millVersions)
+// trait itestCross extends Cross.Module[String] with MillIntegrationTestModule {
+//   override def millSourcePath =
+//     super.millSourcePath / os.up / crossValue.split('.').take(2).mkString(".")
+//   def millTestVersion = crossValue
+//   def pluginsUnderTest = Seq(
+//     `plugin`(crossValue)
+//   )
+//   def testBase = millSourcePath / "src"
+// }
 
-// -----------------------------------------------------------------------------
-// Command Aliases
-// -----------------------------------------------------------------------------
-// Alias commands are run like `./mill run [alias]`
-// Define the alias as a map element containing the alias name and a Seq with the tasks to be executed
-val aliases: Map[String, Seq[String]] = Map(
-  "lint"     -> Seq("mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources", "__.fix"),
-  "fmt"      -> Seq("mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources"),
-  "checkfmt" -> Seq("mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources"),
-  "deps"     -> Seq("mill.scalalib.Dependency/showUpdates"),
-  "testall"  -> Seq("__.test"),
-  "pub"      -> Seq("io.kipp.mill.ci.release.ReleaseModule/publishAll"),
-)
-
-def run(ev: eval.Evaluator, alias: String = "") = T.command {
-  aliases.get(alias) match {
-    case Some(t) =>
-      mill.main.MainModule.evaluateTasks(
-        ev,
-        t.flatMap(x => Seq(x, "+")).flatMap(_.split("\\s+")).init,
-        mill.define.SelectMode.Single,
-      )(identity)
-    case None =>
-      Console.err.println("Use './mill run [alias]'."); Console.out.println("Available aliases:")
-      aliases.foreach(x => Console.out.println(s"${x._1.padTo(15, ' ')} - Commands: (${x._2.mkString(", ")})"));
-      sys.exit(1)
-  }
+object MyAliases extends Aliases {
+  def fmt      = alias("mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources")
+  def checkfmt = alias("mill.scalalib.scalafmt.ScalafmtModule/checkFormatAll __.sources")
+  def lint     = alias("mill.scalalib.scalafmt.ScalafmtModule/reformatAll __.sources", "__.fix")
+  def deps     = alias("mill.scalalib.Dependency/showUpdates")
+  def pub      = alias("io.kipp.mill.ci.release.ReleaseModule/publishAll")
+  def publocal = alias("__.publishLocal")
+  def testall  = alias("__.test")
 }

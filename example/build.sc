@@ -5,41 +5,27 @@ import com.carlosedp.milldockernative.DockerNative
 object hello extends ScalaModule with DockerNative {
   def scalaVersion = "3.3.0"
   def ivyDeps = Agg(
-    ivy"dev.zio::zio:2.0.6",
-    ivy"dev.zio::zio-http:0.0.3",
+    ivy"dev.zio::zio:2.0.15",
+    ivy"dev.zio::zio-http:3.0.0-RC2",
   )
+  // GraalVM parameters needed by ZIO and ZIO-http
+  def useNativeConfig = T.input(T.env.get("NATIVECONFIG_GEN").contains("true"))
+  def forkArgs = T {
+    if (useNativeConfig())
+      Seq(s"-agentlib:native-image-agent=config-merge-dir=${resources().head.path}/META-INF/native-image")
+    else Seq.empty
+  }
 
   object dockerNative extends DockerNativeConfig {
     // Native Image parameters
     def nativeImageName         = "hello"
-    def nativeImageGraalVmJvmId = T("graalvm-java17:22.3.1")
+    def nativeImageGraalVmJvmId = T("graalvm-java17:22.3.2")
     def nativeImageClassPath    = runClasspath()
     def nativeImageMainClass    = "com.domain.Main.MainApp"
-    // GraalVM parameters needed by ZIO and ZIO-http
-    def nativeImageOptions = Seq(
-      "--no-fallback",
-      "--enable-http",
-      "--enable-url-protocols=http,https",
-      "--install-exit-handlers",
-      "-Djdk.http.auth.tunneling.disabledSchemes=",
-      "--initialize-at-run-time=io.netty.channel.DefaultFileRegion",
-      "--initialize-at-run-time=io.netty.channel.epoll.Native",
-      "--initialize-at-run-time=io.netty.channel.epoll.Epoll",
-      "--initialize-at-run-time=io.netty.channel.epoll.EpollEventLoop",
-      "--initialize-at-run-time=io.netty.channel.epoll.EpollEventArray",
-      "--initialize-at-run-time=io.netty.channel.kqueue.KQueue",
-      "--initialize-at-run-time=io.netty.channel.kqueue.KQueueEventLoop",
-      "--initialize-at-run-time=io.netty.channel.kqueue.KQueueEventArray",
-      "--initialize-at-run-time=io.netty.channel.kqueue.Native",
-      "--initialize-at-run-time=io.netty.channel.unix.Limits",
-      "--initialize-at-run-time=io.netty.channel.unix.Errors",
-      "--initialize-at-run-time=io.netty.channel.unix.IovArray",
-      "--initialize-at-run-time=io.netty.handler.ssl.BouncyCastleAlpnSslUtils",
-      "--initialize-at-run-time=io.netty.handler.codec.compression.ZstdOptions",
-      "--initialize-at-run-time=io.netty.incubator.channel.uring.Native",
-      "--initialize-at-run-time=io.netty.incubator.channel.uring.IOUring",
-      "--initialize-at-run-time=io.netty.incubator.channel.uring.IOUringEventLoopGroup",
-    ) ++ (if (sys.props.get("os.name").contains("Linux")) Seq("--static") else Seq.empty)
+    def nativeImageOptions = super.nativeImageOptions() ++
+      // GraalVM initializes all classes at runtime, so lets ignore all configs from jars since some change this behavior
+      Seq("--exclude-config", "/.*.jar", ".*.properties") ++
+      (if (sys.props.get("os.name").contains("Linux")) Seq("--static") else Seq.empty)
 
     // Docker image parameters
     def baseImage    = "ubuntu:22.04"
@@ -47,11 +33,10 @@ object hello extends ScalaModule with DockerNative {
     def exposedPorts = Seq(8080)
   }
 
-  object test extends Tests {
+  object test extends ScalaTests with TestModule.ZioTest {
     def ivyDeps = Agg(
-      ivy"dev.zio::zio-test:2.0.6",
-      ivy"dev.zio::zio-test-sbt:2.0.6",
+      ivy"dev.zio::zio-test:2.0.15",
+      ivy"dev.zio::zio-test-sbt:2.0.15",
     )
-    def testFramework = T("zio.test.sbt.ZTestFramework")
   }
 }

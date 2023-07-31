@@ -5,7 +5,7 @@ on:
     branches: [main]
     tags: ["*"]
   pull_request:
-    branches: [main]
+    branches: ["*"]
 
 concurrency:
   group: ${{ github.ref }}
@@ -17,6 +17,8 @@ jobs:
       matrix:
         jvm: ["11", "17"]
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
 
     steps:
       - name: Checkout
@@ -93,7 +95,7 @@ jobs:
         id: coursier-cache
 
       - name: Publish
-        run: ./mill -i io.kipp.mill.ci.release.ReleaseModule/publishAll
+        run: ./mill Alias/run pub
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
@@ -123,15 +125,16 @@ jobs:
         id: coursier-cache
 
       - name: Publish
-        run: ./mill -i io.kipp.mill.ci.release.ReleaseModule/publishAll
+        run: ./mill Alias/run pub
         env:
           SONATYPE_USERNAME: ${{ secrets.SONATYPE_USERNAME }}
           SONATYPE_PASSWORD: ${{ secrets.SONATYPE_PASSWORD }}
           PGP_PASSPHRASE: ${{ secrets.PGP_PASSPHRASE }}
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
 
-      - name: Create Release for Tag
-        id: release_tag
-        uses: ncipollo/release-action@v1
+      - name: Publish release from tag
+        uses: ghalactic/github-release-from-tag@v4
         with:
-          name: ${{ github.ref }}
+          generateReleaseNotes: "true"
+          prerelease: "false"
+          draft: "false"

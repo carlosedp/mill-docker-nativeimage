@@ -100,7 +100,7 @@ trait DockerNative { outer: JavaModule =>
       if (pull) (pull, Math.random()) else (pull, 0d)
     }
 
-    def dockerfile: T[String] = T {
+    private def dockerfile: T[String] = T {
       val nativeBinName = nativeImage().path.last
       val labelRhs = labels().map { case (k, v) =>
         val lineBrokenValue = v
@@ -146,11 +146,11 @@ trait DockerNative { outer: JavaModule =>
     }
 
     //  The image that will be generated to build the native image
-    def buildBaseDockerImage = T.input {
+    private def buildBaseDockerImage = T.input {
       os.proc("docker", "build", "-t", baseDockerImage(), ".", "-f", writeDockerFile()).call(check = false)
       baseDockerImage()
     }
-    def writeDockerFile = T {
+    private def writeDockerFile = T {
       val filename = "Dockerfile.nativeimagebase"
       os.write.over(
         T.dest / filename,
@@ -161,6 +161,7 @@ trait DockerNative { outer: JavaModule =>
 
     // Build native image on a Docker container if not running on Linux
     override def nativeImageDockerParams = T {
+      // if (sys.props.get("os.name").contains("Linux") == false) {
       if (sys.props.get("os.name").contains("Linux") == false) {
         Some(
           NativeImage.DockerParams(
@@ -173,6 +174,8 @@ trait DockerNative { outer: JavaModule =>
         )
       } else { Option.empty[NativeImage.DockerParams] }
     }
+
+    // User-facing tasks
 
     /**
      * Convenience task to build the Linux Native Image binary of the

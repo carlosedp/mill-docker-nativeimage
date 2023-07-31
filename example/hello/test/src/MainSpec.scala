@@ -1,22 +1,19 @@
 package com.domain.Main
 
+import zio.*
 import zio.http.*
-import zio.http.model.*
 import zio.test.*
 
-object HelloWorldSpec extends ZIOSpecDefault {
+object MainSpec extends ZIOSpecDefault:
 
-  val rootroute = RootRoute()
   def spec =
     suite("Main application")(
-      test("root route should return text string") {
-        for {
-          response <- rootroute(Request.get(URL(!!)))
+      test("should greet world"):
+        for
+          response <- HomeApp.runZIO(Request.get(URL(Root)))
           body     <- response.body.asString
-        } yield assertTrue(
+        yield assertTrue(
           response.status == Status.Ok,
-          body == "Hello World!",
+          body == "Hello World",
         )
-      }
     )
-}
