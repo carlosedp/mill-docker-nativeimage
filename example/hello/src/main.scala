@@ -8,7 +8,7 @@ object MainApp extends ZIOAppDefault:
   val server: ZIO[Any, Throwable, Nothing] = Server
     .serve(HomeApp)
     .provide(
-      Server.default,
+      Server.default
     )
 
   // Run main application
