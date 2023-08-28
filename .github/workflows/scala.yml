@@ -133,7 +133,7 @@ jobs:
           PGP_SECRET: ${{ secrets.PGP_SECRET }}
 
       - name: Publish release from tag
-        uses: ghalactic/github-release-from-tag@v4
+        uses: ghalactic/github-release-from-tag@v5
         with:
           generateReleaseNotes: "true"
           prerelease: "false"
