@@ -15,7 +15,7 @@ import de.tobiasroeser.mill.integrationtest._
 import $ivy.`com.carlosedp::mill-aliases::0.4.1`
 import com.carlosedp.aliases._
 
-val millVersions           = Seq("0.10.12", "0.11.2")
+val millVersions           = Seq("0.10.12", "0.11.5")
 val scala213               = "2.13.11"
 val millnativeimage_plugin = "0.1.25"
 val utest                  = "0.8.1"
