@@ -45,17 +45,17 @@ Sample configuration:
 
 ```scala
 import mill._, mill.scalalib._, mill.scalalib.scalafmt._
-import $ivy.`com.carlosedp::mill-docker-nativeimage::0.4-SNAPSHOT`
+import $ivy.`com.carlosedp::mill-docker-nativeimage::0.6.1`
 import com.carlosedp.milldockernative.DockerNative
 
 object hello extends ScalaModule with DockerNative {
-  def scalaVersion = "3.3.0-RC2"
+  def scalaVersion = "3.3.1"
   // def ivyDeps = ...
 //   def nativeImageClassPath = runClasspath()
   object dockerNative extends DockerNativeConfig {
     // Native Image parameters
     def nativeImageName         = "hello"
-    def nativeImageGraalVmJvmId = T("graalvm-java17:22.3.1")
+    def nativeImageGraalVmJvmId = T("graalvm-java17:22.3.2")
     def nativeImageClassPath    = runClasspath()
     def nativeImageMainClass    = "com.domain.Hello.Hello"
     // GraalVM parameters depending on your application needs
@@ -108,7 +108,7 @@ Image configuration parameters defined in `DockerNativeConfig` trait:
 // These are the parameters to customize the image used to build the GraalVM Native Image binary
 //
 // Version of Coursier to be used to pull Scala dependencies in the build image
-def coursierVersion: T[String] = "v2.1.0-RC5"
+def coursierVersion: T[String] = "v2.1.6"
 // Override the name of the image that will be generated to build the GraalVM Native Image
 def baseDockerImage: T[String] = "mybasebuild"
 // Override the DockerFile used to build the GraalVM Native Image

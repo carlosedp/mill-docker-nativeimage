@@ -15,29 +15,30 @@ import de.tobiasroeser.mill.integrationtest._
 import $ivy.`com.carlosedp::mill-aliases::0.4.1`
 import com.carlosedp.aliases._
 
-val millVersions           = Seq("0.10.12", "0.11.5")
-val scala213               = "2.13.11"
-val millnativeimage_plugin = "0.1.25"
-val utest                  = "0.8.1"
+val millVersions           = Seq("0.10.12", "0.11.0") // scala-steward:off
+val scala213               = "2.13.12"
+val millnativeimage_plugin = "0.1.26"
 val pluginName             = "mill-docker-nativeimage"
 
 object plugin extends Cross[Plugin](millVersions)
 trait Plugin  extends Cross.Module[String]
-  with ScalaModule
-  with Publish
-  with ScalafixModule
-  with ScalafmtModule {
+    with ScalaModule
+    with Publish
+    with ScalafixModule
+    with ScalafmtModule {
   val millVersion   = crossValue
   def scalaVersion  = scala213
   def artifactName  = s"${pluginName}_mill${scalaNativeBinaryVersion(millVersion)}"
   def scalacOptions = super.scalacOptions() ++ Seq("-Ywarn-unused", "-deprecation", "-feature")
 
-  override def ivyDeps = super.ivyDeps() ++ Agg(
-    ivy"com.lihaoyi::mill-scalalib:${millVersion}",
-    ivy"io.github.alexarchambault.mill::mill-native-image_mill${scalaNativeBinaryVersion(millVersion)}::${millnativeimage_plugin}",
+  def compileIvyDeps = super.compileIvyDeps() ++ Agg(
+    ivy"com.lihaoyi::mill-scalalib:${millVersion}"
+  )
+  def ivyDeps = super.ivyDeps() ++ Agg(
+    ivy"io.github.alexarchambault.mill::mill-native-image_mill${scalaNativeBinaryVersion(millVersion)}::${millnativeimage_plugin}"
   )
 
-  override def sources = T.sources {
+  def sources = T.sources {
     super.sources() ++ Seq(
       millSourcePath / s"src-mill${scalaNativeBinaryVersion(millVersion)}"
     ).map(PathRef(_))
