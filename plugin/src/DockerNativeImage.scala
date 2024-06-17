@@ -170,7 +170,8 @@ trait DockerNative { outer: JavaModule =>
                         imageName = buildBaseDockerImage(),
                         prepareCommand = "",
                         csUrl =
-                            s"https://github.com/coursier/coursier/releases/download/${coursierVersion()}/cs-${sys.props.get("os.arch").get}-pc-linux.gz",
+                            s"https://github.com/coursier/coursier/releases/download/${coursierVersion()}/cs-${sys.props
+                                    .get("os.arch").get}-pc-linux.gz",
                         extraNativeImageArgs = Nil,
                     )
                 )
