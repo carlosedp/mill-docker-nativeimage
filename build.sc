@@ -12,7 +12,7 @@ import $ivy.`io.chris-kipp::mill-ci-release::0.1.10`
 import io.kipp.mill.ci.release.{CiReleaseModule, SonatypeHost}
 import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.7.1`
 import de.tobiasroeser.mill.integrationtest._
-import $ivy.`com.carlosedp::mill-aliases::0.4.1`
+import $ivy.`com.carlosedp::mill-aliases::0.5.0`
 import com.carlosedp.aliases._
 
 val millVersions           = Seq("0.10.12", "0.11.0") // scala-steward:off
