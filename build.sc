@@ -16,8 +16,8 @@ import $ivy.`com.carlosedp::mill-aliases::0.5.0`
 import com.carlosedp.aliases._
 
 val millVersions           = Seq("0.10.12", "0.11.0") // scala-steward:off
-val scala213               = "2.13.12"
-val millnativeimage_plugin = "0.1.26"
+val scala213               = "2.13.15"
+val millnativeimage_plugin = "0.1.28"
 val pluginName             = "mill-docker-nativeimage"
 
 object plugin extends Cross[Plugin](millVersions)
