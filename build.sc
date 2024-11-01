@@ -17,7 +17,7 @@ import com.carlosedp.aliases._
 
 val millVersions           = Seq("0.10.12", "0.11.0") // scala-steward:off
 val scala213               = "2.13.15"
-val millnativeimage_plugin = "0.1.28"
+val millnativeimage_plugin = "0.1.29"
 val pluginName             = "mill-docker-nativeimage"
 
 object plugin extends Cross[Plugin](millVersions)
