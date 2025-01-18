@@ -8,7 +8,7 @@ import $ivy.`com.goyeau::mill-scalafix::0.4.2`
 import com.goyeau.mill.scalafix.ScalafixModule
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.1`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
-import $ivy.`io.chris-kipp::mill-ci-release::0.1.10`
+import $ivy.`io.chris-kipp::mill-ci-release::0.2.1`
 import io.kipp.mill.ci.release.{CiReleaseModule, SonatypeHost}
 import $ivy.`de.tototec::de.tobiasroeser.mill.integrationtest::0.7.1`
 import de.tobiasroeser.mill.integrationtest._
