@@ -4,7 +4,7 @@ import mill.scalalib.scalafmt._
 import mill.scalalib.publish._
 import mill.scalalib.api.ZincWorkerUtil._
 
-import $ivy.`com.goyeau::mill-scalafix::0.4.2`
+import $ivy.`com.goyeau::mill-scalafix::0.5.1`
 import com.goyeau.mill.scalafix.ScalafixModule
 import $ivy.`de.tototec::de.tobiasroeser.mill.vcs.version::0.4.1`
 import de.tobiasroeser.mill.vcs.version.VcsVersion
