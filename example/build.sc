@@ -4,13 +4,13 @@ import com.carlosedp.milldockernative.DockerNative
 
 object hello extends ScalaModule with DockerNative {
     def scalaVersion = "3.3.0"
-    def ivyDeps = Agg(
+    def ivyDeps      = Agg(
         ivy"dev.zio::zio:2.0.15",
         ivy"dev.zio::zio-http:3.0.0-RC2",
     )
     // GraalVM parameters needed by ZIO and ZIO-http
     def useNativeConfig = T.input(T.env.get("NATIVECONFIG_GEN").contains("true"))
-    def forkArgs = T {
+    def forkArgs        = T {
         if (useNativeConfig())
             Seq(s"-agentlib:native-image-agent=config-merge-dir=${resources().head.path}/META-INF/native-image")
         else Seq.empty
@@ -22,7 +22,7 @@ object hello extends ScalaModule with DockerNative {
         def nativeImageGraalVmJvmId = T("graalvm-java17:22.3.2")
         def nativeImageClassPath    = runClasspath()
         def nativeImageMainClass    = "com.domain.Main.MainApp"
-        def nativeImageOptions = super.nativeImageOptions() ++
+        def nativeImageOptions      = super.nativeImageOptions() ++
             // GraalVM initializes all classes at runtime, so lets ignore all configs from jars since some change this behavior
             Seq("--exclude-config", "/.*.jar", ".*.properties") ++
             (if (sys.props.get("os.name").contains("Linux")) Seq("--static") else Seq.empty)
