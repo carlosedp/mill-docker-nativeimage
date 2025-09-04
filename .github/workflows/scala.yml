@@ -133,7 +133,7 @@ jobs:
           MILL_PGP_SECRET_BASE64: ${{ secrets.PGP_SECRET }}
 
       - name: Publish release from tag
-        uses: ghalactic/github-release-from-tag@v5
+        uses: ghalactic/github-release-from-tag@v6
         with:
           generateReleaseNotes: "true"
           prerelease: "false"
