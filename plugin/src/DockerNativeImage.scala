@@ -22,7 +22,7 @@ trait DockerNative { outer: JavaModule =>
         def pullBaseImage:   T[Boolean]             = T(baseImage().endsWith(":latest"))
         def coursierVersion: T[String]              = "v2.1.0-RC5"
         def baseDockerImage: T[String]              = "nativeimagebase:graalvm"
-        def baseDockerFile: T[String] =
+        def baseDockerFile:  T[String]              =
             s"""FROM ubuntu:22.04
                |RUN apt-get update -q -y && apt-get install -q -y build-essential libz-dev locales --no-install-recommends
                |RUN locale-gen en_US.UTF-8
@@ -103,7 +103,7 @@ trait DockerNative { outer: JavaModule =>
 
         private def dockerfile: T[String] = T {
             val nativeBinName = nativeImage().path.last
-            val labelRhs = labels().map { case (k, v) =>
+            val labelRhs      = labels().map { case (k, v) =>
                 val lineBrokenValue = v
                     .replace("\r\n", "\\\r\n")
                     .replace("\n", "\\\n")
