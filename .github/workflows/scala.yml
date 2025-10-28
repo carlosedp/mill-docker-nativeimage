@@ -35,7 +35,7 @@ jobs:
           components: "native-image"
 
       - name: Cache packages
-        uses: coursier/cache-action@v6
+        uses: coursier/cache-action@v7
         id: coursier-cache
 
       - name: Check Formatting
@@ -62,7 +62,7 @@ jobs:
   #       java-version: 17
 
   #   - name: Cache packages
-  #     uses: coursier/cache-action@v6
+  #     uses: coursier/cache-action@v7
   #     id: coursier-cache
 
   #   - name: Run code coverage
@@ -91,7 +91,7 @@ jobs:
           components: "native-image"
 
       - name: Cache packages
-        uses: coursier/cache-action@v6
+        uses: coursier/cache-action@v7
         id: coursier-cache
 
       - name: Publish
@@ -121,7 +121,7 @@ jobs:
           components: "native-image"
 
       - name: Cache packages
-        uses: coursier/cache-action@v6
+        uses: coursier/cache-action@v7
         id: coursier-cache
 
       - name: Publish
